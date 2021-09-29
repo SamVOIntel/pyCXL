@@ -95,7 +95,7 @@ than modifying everywhere the struct was hardcoded.
 
 ### The Jerk Flit
 
-![jerk_flit](img/jerk_flit.jpg)
+![jerk_flit](img/jerk_flit.JPG)
 
 The Jerk Flit is a **nightmare design from a true sadist**. The checkered <span style="color:red">Red</span>[32:59] is 
 interrupted by the <span style="color:yellow">Yellow</span>[60:89] struct. I say "interrupted" because the final field 
