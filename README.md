@@ -9,7 +9,7 @@ TODO: Installation Notes
 
 ---
 ## What is CLX?
-![CXL_logo](img\CXL_Logo.jpg)
+![CXL_logo](img/CXL_Logo.jpg)
 
 [CXL](https://www.computeexpresslink.org/about-cxl) is an industry-supported Cache-Coherent Interconnect for Processors,
 Memory Expansion and Accelerators and designed as an industry **open standard** interface for high-speed
@@ -31,7 +31,7 @@ TODO: Example of command and response with the package
 
 
 ## What is the CXL Protocol?
-![CXL_Components](img\CXL_Components.jpg)
+![CXL_Components](img/CXL_Components.jpg)
 
 The CXL protocol actually refers to three separate protocols which are used in various combinations based on the type
 of device setup.
@@ -53,7 +53,7 @@ Below are several examples of these Flits:
 
 ### The Good Flit
 
-![good_flit](img\nice_flit.jpg)
+![good_flit](img/nice_flit.jpg)
 
 This Flit contains three substructs which have been color-coded <span style="color:red">Red</span>[0:63], 
 <span style="color:pink">Pink</span>[64:87], <span style="color:orange">Orange</span>[88:119], and 8 bits of RSVD at the
@@ -62,7 +62,7 @@ defined using builtin ctypes. All substructs begin and end on byte boundaries.
 
 ### The Less-Good Flit
 
-![less_good_flit](img\less_good_flit.jpg)
+![less_good_flit](img/less_good_flit.jpg)
 
 This flit contains two substructs, and at a glance, shares many similarities wit the good flit. There's a nuggest of
 <span style="color:lightblue">RSVD</span> at byte 10, but this bit actually helps to keep the 
@@ -78,7 +78,7 @@ It's not unsolvable, it's just why this flit is the "less good" flit.
 
 ### The Inconvenient Flit
 
-![The_Inconvenient_Flit.](img\The_Inconvenient_Flit.JPG)
+![The_Inconvenient_Flit.](img/The_Inconvenient_Flit.JPG)
 
 Right away thre are several challenges with this flit. Only the first 
 <span style="color:lightblue">Light Blue</span>[0:31] struct begins and ends on a byte boundary. 
@@ -95,7 +95,7 @@ than modifying everywhere the struct was hardcoded.
 
 ### The Jerk Flit
 
-![jerk_flit](img\jerk_flit.jpg)
+![jerk_flit](img/jerk_flit.jpg)
 
 The Jerk Flit is a **nightmare design from a true sadist**. The checkered <span style="color:red">Red</span>[32:59] is 
 interrupted by the <span style="color:yellow">Yellow</span>[60:89] struct. I say "interrupted" because the final field 
