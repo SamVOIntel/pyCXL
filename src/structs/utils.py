@@ -3,6 +3,7 @@ import operator
 from types import SimpleNamespace
 
 
+# todo potential good use cases for dataclasses
 class Biterator:
 
     def __init__(self, data):
@@ -37,6 +38,232 @@ class Biterator:
         for byte_val in byte_string:
             bin_val = bin(byte_val)[2:]
             yield "0" * (8 - len(bin_val)) + bin_val
+
+
+class BitField:
+
+    def __init__(self, size: int, name: str = "", value: int = 0):
+        self.__size = size
+        self.__name = name
+        self._value = value
+
+    def __int__(self):
+        return self.value
+
+    def __index__(self):
+        """
+        Brief:
+            Enables type conversions such as __hex__
+        """
+        return operator.index(int(self))
+
+    def __str__(self):
+        return f"{self.name}:    {self.value}"
+
+    def to_bin(self):
+        """
+        __bin__ cannot be overloaded in the same way as other methods. Treat this function as if you could.
+        """
+        binStr = bin(self.value)
+        while len(binStr) < self.size:
+            binStr = '0' + binStr
+        return binStr
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        if len(bin(new_value)[2:]) > self.size:
+            raise ValueError(f"{new_value} is too large for the field size: {self.size} bits")
+        self._value = new_value
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, new_name):
+        raise AttributeError("name field cannot be modified")
+
+    @property
+    def size(self):
+        return self.__size
+
+    @size.setter
+    def size(self, new_size):
+        raise AttributeError("size field cannot be modified")
+
+
+class BitStruct:
+
+    def __init__(self, bitfields: list[BitField], name: str = ""):
+        self.__fields = bitfields
+        self.__name = name
+        self.__size = sum([field.size for field in bitfields])
+
+    def __str__(self):
+        print_width = max([len(field.name) for field in self.fields])
+        retStr = f"\t{self.name}:\n"
+        for field in self.fields:
+            padding = " " * (print_width - len(field.name))
+            retStr += f"\t\t{field.name}:{padding}{field.value}\n"
+        return retStr
+
+    def to_bin(self):
+        retStr = ""
+        for field in self.fields:
+            binStr = bin(field.value)
+            while len(binStr) < field.size:
+                binStr = '0' + binStr
+            retStr += binStr
+        return retStr
+
+    def __int__(self):
+        binstr = self.to_bin()
+        return int(binstr, 2)
+
+    def __index__(self):
+        """
+        Brief:
+            Enables type conversions such as __hex__
+        """
+        return operator.index(int(self))
+
+    @property
+    def fields(self):
+        return self.__fields
+
+    @fields.setter
+    def fields(self, new_val):
+        raise AttributeError("Cannot modify the organization of this BitFieldStruct's BitFields.")
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, new_val):
+        raise AttributeError("This BitFieldStruct cannot be re-named.")
+
+    @property
+    def size(self):
+        return self.__size
+
+    @size.setter
+    def size(self, new_val):
+        raise AttributeError("This BitFieldStruct cannot be re-sized.")
+
+    def from_binary(self, binstring: str = ""):
+        """
+        This class is meant to represent a struct of bit fields. It requires bits to populate.
+        """
+        if binstring.startswith("0b"):
+            binstring = binstring[2:]
+
+        for field in self.fields:
+            int_val = int(binstring[:field.size], 2)
+            field.value = int_val
+            binstring = binstring[field.size:]
+
+    def from_bytes(self, bytestring: bytes):
+        """
+        Populates the bit struct from a bytearray
+        """
+        data = Biterator(bytestring)
+        available_bins = next(data)
+        for field in self.fields:
+            while len(available_bins) < field.size:
+                available_bins += next(data)
+            int_val = int(available_bins[:field.size], 2)
+            field.value = int_val
+            available_bins = available_bins[field.size:]
+
+
+class FlitStruct:
+    """
+    A FlitStruct is defined as a 16 byte ordered collection of BitStructs
+    """
+
+    def __init__(self, bitstructs: list[BitStruct], name: str = ""):
+        self.__structs = bitstructs
+        self.__name = name
+        # A FlitStruct is specifically 128 bits
+        self.__size = 128
+
+        total_size = sum([struct.size for struct in self.structs])
+        if total_size != self.size:
+            raise ValueError(f"Expected 128 bits, was {total_size}")
+
+    def __str__(self):
+        retStr = f"{self.name}:\n"
+        for struct in self.structs:
+            retStr += str(struct)
+        return retStr
+
+    def to_bin(self):
+        binstr = ""
+        for struct in self.structs:
+            binstr += struct.to_bin()
+        return binstr
+
+    def __int__(self):
+        binstr = self.to_bin()
+        return int(binstr, 2)
+
+    def __bytes__(self):
+        binStr = self.to_bin()
+        byteStr = b""
+        for i in range(0, len(binStr), 8):
+            intVal = int(binStr[i:i + 8], 2)
+            # int.to_bytes requires a byteorder param even though it doesnt matter as I am looking at 1 byte
+            byteStr += intVal.to_bytes(1, byteorder='big')
+        while len(byteStr) < 16:
+            byteStr = b"\x00" + byteStr
+        return byteStr
+
+    def __index__(self):
+        """
+        Brief:
+            Enables type conversions such as __hex__
+        """
+        return operator.index(int(self))
+
+    @property
+    def structs(self):
+        return self.__structs
+
+    @structs.setter
+    def structs(self, new_value):
+        raise AttributeError("Cannot modify FlitStruct substructs")
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, new_value):
+        raise AttributeError("Cannot modify FlitStruct's name")
+
+    @property
+    def size(self):
+        return self.__size
+
+    @size.setter
+    def size(self, new_value):
+        raise AttributeError("Cannot modify FlitStruct's size")
+
+    def from_buffer(self, bytestring: bytes):
+        data = Biterator(bytestring)
+        available_bins = next(data)
+
+        for struct in self.structs:
+            while len(available_bins) < struct.size:
+                available_bins += next(data)
+            struct.from_binary(available_bins[:struct.size])
+            available_bins = available_bins[struct.size:]
+
 
 
 class FlitParser:
@@ -149,8 +376,8 @@ class FlitParser:
                         binVal = "0" + binVal
                     binStr += binVal
                 sub_array_indexes[__struct[0]] += 1
-        if len(binStr) > 128:
-            raise ValueError("The binary representation of this struct was greater than 16 bytes!")
+        if len(binStr) != 128:
+            raise ValueError(f"The binary representation of this struct was {len(binStr)} bits, expected 128!")
         return binStr
 
     def __int__(self):

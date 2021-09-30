@@ -602,3 +602,131 @@ def test_slot_format_converts_to_int(struct, data):
     assert int(slot_format) == data_as_int
     assert hex(slot_format) == hex(data_as_int)
     assert bytes(slot_format) == data
+
+
+@pytest.mark.parametrize(
+    "struct", [
+        [
+            ["struct0", [[
+                        ("Apples",          4),
+                        ("Bananas",         4),
+                        ("Carrots",         8),
+                        ("Durian",          16),
+                    ]]
+             ],
+            ["struct1", [[
+                        ("Elderberries",    16),
+                        ("Fig",             8),
+                        ("Grapefruit",      4),
+                        ("Honeydew",        4)
+                    ]]
+             ],
+            ["struct2", [[
+                        ("Jackfruit",       4),
+                        ("Kumquat",         16),
+                        ("Lemon",           4),
+                        ("Mango",           8)
+                    ]]
+             ],
+            ["struct3", [[
+                        ("Nectarine",       8),
+                        ("Olives",          4),
+                        ("Papaya",          16),
+                        ("Quince",          4)
+                    ]]
+             ],
+        ],
+    ]
+)
+def test_flitparser_can_output_from_valid_assignment(struct):
+    slot_format = FlitParser(struct)
+
+    slot_format.struct0[0].Apples        = 0
+    slot_format.struct0[0].Bananas       = 1
+    slot_format.struct0[0].Carrots       = 2
+    slot_format.struct0[0].Durian        = 3
+
+    slot_format.struct1[0].Elderberries  = 4
+    slot_format.struct1[0].Fig           = 5
+    slot_format.struct1[0].Grapefruit    = 6
+    slot_format.struct1[0].Honeydew      = 7
+
+    slot_format.struct2[0].Jackfruit     = 8
+    slot_format.struct2[0].Kumquat       = 9
+    slot_format.struct2[0].Lemon         = 10
+    slot_format.struct2[0].Mango         = 11
+
+    slot_format.struct3[0].Nectarine     = 12
+    slot_format.struct3[0].Olives        = 13
+    slot_format.struct3[0].Papaya        = 14
+    slot_format.struct3[0].Quince        = 15
+
+    expected_bin  = '0000'              # apples
+    expected_bin += '0001'              # bananas
+    expected_bin += '00000010'          # carrots
+    expected_bin += '0000000000000011'  # durians
+
+    expected_bin += '0000000000000100'  # elderberries
+    expected_bin += '00000101'          # fig
+    expected_bin += '0110'              # grapefruit
+    expected_bin += '0111'              # honeydew
+
+    expected_bin += '1000'              # jackfruit
+    expected_bin += '0000000000001001'  # kumquat
+    expected_bin += '1010'              # lemon
+    expected_bin += '00001011'          # mango
+
+    expected_bin += '00001100'          # nectarine
+    expected_bin += '1101'              # olives
+    expected_bin += '0000000000001110'  # papaya
+    expected_bin += '1111'              # quince
+
+    assert slot_format.__bin__() == expected_bin
+
+
+@pytest.mark.parametrize(
+    "struct", [
+        [
+            ["struct0", [[
+                        ("Apples",          4),
+                        ("Bananas",         4),
+                        ("Carrots",         8),
+                        ("Durian",          16),
+                    ]]
+             ],
+            ["struct1", [[
+                        ("Elderberries",    16),
+                        ("Fig",             8),
+                        ("Grapefruit",      4),
+                        ("Honeydew",        4)
+                    ]]
+             ],
+            ["struct2", [[
+                        ("Jackfruit",       4),
+                        ("Kumquat",         16),
+                        ("Lemon",           4),
+                        ("Mango",           8)
+                    ]]
+             ],
+            ["struct3", [[
+                        ("Nectarine",       8),
+                        ("Olives",          4),
+                        ("Papaya",          16),
+                        ("Quince",          4)
+                    ]]
+             ],
+        ],
+    ]
+)
+def test_flitparser_raises_valueerror_on_invalid_assignment(struct):
+    slot_format = FlitParser(struct)
+
+    slot_format.struct0[0].Apples = 100
+
+    try:
+        slot_format.__bin__()
+        assert False
+    except ValueError:
+        assert True
+    except Exception:
+        assert False
