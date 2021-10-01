@@ -15,6 +15,7 @@ class Biterator:
             data: an array of bytes
         """
         self.data = data
+        self.size = len(data)
         self.index = 0
 
     def __iter__(self):
@@ -23,7 +24,7 @@ class Biterator:
 
     def __next__(self):
         idx = self.index
-        if idx >= len(self.data):
+        if idx >= self.size:
             raise StopIteration
         self.index += 1
         bin_val = bin(self.data[idx])[2:]
@@ -64,10 +65,20 @@ class BitField:
         """
         __bin__ cannot be overloaded in the same way as other methods. Treat this function as if you could.
         """
-        binStr = bin(self.value)
+        binStr = bin(self.value)[2:]
         while len(binStr) < self.size:
             binStr = '0' + binStr
         return binStr
+
+    def to_bytes(self):
+        """
+        Creates a bytearray of the appropriate size. Unclear what this might be used for.
+        """
+        bins = self.to_bin()
+        num_bytes, rem = divmod(len(bins), 8)
+        if rem:
+            num_bytes += 1
+        return int(bins, 2).to_bytes(num_bytes, 'big')
 
     @property
     def value(self):
@@ -111,15 +122,6 @@ class BitStruct:
             retStr += f"\t\t{field.name}:{padding}{field.value}\n"
         return retStr
 
-    def to_bin(self):
-        retStr = ""
-        for field in self.fields:
-            binStr = bin(field.value)
-            while len(binStr) < field.size:
-                binStr = '0' + binStr
-            retStr += binStr
-        return retStr
-
     def __int__(self):
         binstr = self.to_bin()
         return int(binstr, 2)
@@ -155,6 +157,25 @@ class BitStruct:
     def size(self, new_val):
         raise AttributeError("This BitFieldStruct cannot be re-sized.")
 
+    def to_bin(self):
+        retStr = ""
+        for field in self.fields:
+            binStr = bin(field.value)[2:]
+            while len(binStr) < field.size:
+                binStr = '0' + binStr
+            retStr += binStr
+        return retStr
+
+    def to_bytes(self):
+        """
+        Creates a bytearray of the appropriate size. Unclear what this might be used for.
+        """
+        bins = self.to_bin()
+        num_bytes, rem = divmod(len(bins), 8)
+        if rem:
+            num_bytes += 1
+        return int(bins, 2).to_bytes(num_bytes, 'big')
+
     def from_binary(self, binstring: str = ""):
         """
         This class is meant to represent a struct of bit fields. It requires bits to populate.
@@ -173,6 +194,7 @@ class BitStruct:
         """
         data = Biterator(bytestring)
         available_bins = next(data)
+
         for field in self.fields:
             while len(available_bins) < field.size:
                 available_bins += next(data)
@@ -202,12 +224,6 @@ class FlitStruct:
             retStr += str(struct)
         return retStr
 
-    def to_bin(self):
-        binstr = ""
-        for struct in self.structs:
-            binstr += struct.to_bin()
-        return binstr
-
     def __int__(self):
         binstr = self.to_bin()
         return int(binstr, 2)
@@ -217,7 +233,7 @@ class FlitStruct:
         byteStr = b""
         for i in range(0, len(binStr), 8):
             intVal = int(binStr[i:i + 8], 2)
-            # int.to_bytes requires a byteorder param even though it doesnt matter as I am looking at 1 byte
+            # int.to_bytes requires a byteorder param
             byteStr += intVal.to_bytes(1, byteorder='big')
         while len(byteStr) < 16:
             byteStr = b"\x00" + byteStr
@@ -254,7 +270,13 @@ class FlitStruct:
     def size(self, new_value):
         raise AttributeError("Cannot modify FlitStruct's size")
 
-    def from_buffer(self, bytestring: bytes):
+    def to_bin(self):
+        binstr = ""
+        for struct in self.structs:
+            binstr += struct.to_bin()
+        return binstr
+
+    def from_bytes(self, bytestring: bytes):
         data = Biterator(bytestring)
         available_bins = next(data)
 
