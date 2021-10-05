@@ -272,7 +272,7 @@ def test_BitStruct_outputs_from_binary(bitstruct, test_data, expected_values, ex
     try:
         bitstruct.from_bin(test_data)
         for idx, val in enumerate(expected_values):
-            assert bitstruct.fields[idx].value == val
+            assert bitstruct[idx].value == val
 
         assert bitstruct.to_bin() == expected_bins
     except ValueError as err:
@@ -300,7 +300,7 @@ def test_BitStruct_outputs_from_bytes(bitstruct, test_data, expected_values, exp
     try:
         bitstruct.from_bytes(test_data)
         for idx, val in enumerate(expected_values):
-            assert bitstruct.fields[idx].value == val
+            assert bitstruct[idx].value == val
         assert bytes(bitstruct) == expected_bytes
     except ValueError as err:
         assert str(err) == "Not enough bytes to fill the BitStruct"
@@ -618,17 +618,118 @@ def test_BitStructCollection_iterates(bitstructs, expected):
                 # 40 bit
                 42, 6821, 11602, 21
             )
+        ),
+        (
+            # too small
+            [
+                EIGHT_BIT_STRUCT(),
+                FOURTY_BIT_STRUCT(),
+                FOURTY_BIT_STRUCT(),
+                FOURTY_BIT_STRUCT(),
+            ], bytearray(b"\xFF"),
+            False
         )
     ]
 )
 def test_BitStructCollection_from_bytes_correct_assignment(bitstructs, bytedata, expected):
     testBitStructCollection = BitStructCollection(bitstructs=bitstructs)
+    try:
+        testBitStructCollection.from_bytes(bytedata)
+        assert_idx = 0
+        for struct in testBitStructCollection:
+            for field in struct:
+                assert field.value == expected[assert_idx]
+                assert_idx += 1
+    except ValueError as err:
+        assert str(err) == "Not enough bytes to fill the BitStructCollection"
+    except Exception:
+        assert False
+
+
+@pytest.mark.parametrize(
+    "bitstructs, bytedata, expected", [
+        (
+            # alternating 1s and 0s
+            [
+                EIGHT_BIT_STRUCT(),
+                TEN_BIT_STRUCT(),
+                FIFTEEN_BIT_STRUCT(),
+                FIFTEEN_BIT_STRUCT(),
+                TWENTY_BIT_STRUCT(),
+                THIRTY_BIT_STRUCT(),
+                THIRTY_BIT_STRUCT(),
+            ], CHECKERBOARD_BYTES,
+            (
+                # 8 bits
+                2, 1, 10,
+                # 10 bits
+                2, 10, 6,
+                # 15 bits
+                84, 171,
+                # 15 bits
+                42, 85,
+                # 20 bits
+                10901, 1, 10,
+                # 30 bits
+                10582, 21, 342,
+                # 30 bits
+                10837, 21, 597
+            )
+        ),
+        (
+            # just enough bytes of all zeros
+            [
+                EIGHT_BIT_STRUCT(),
+                FOURTY_BIT_STRUCT(),
+                FOURTY_BIT_STRUCT(),
+                FOURTY_BIT_STRUCT(),
+            ], CHECKERBOARD_BYTES,
+            (
+                # 8 bits
+                2, 1, 10,
+                # 40 bit
+                42, 6821, 11602, 21,
+                # 40 bit
+                85, 1370, 21165, 10,
+                # 40 bit
+                42, 6821, 11602, 21
+            )
+        ),
+    ]
+)
+def test_BitStructCollection_to_dict(bitstructs, bytedata, expected):
+    # test collection should be initialized as all zeros
+    testBitStructCollection = BitStructCollection(bitstructs=bitstructs, name="TEST")
+    # make dictionary
+    testDict = testBitStructCollection.to_dict()
+
+    # the dictionary is keyed with the name
+    assert testBitStructCollection.name in testDict
+    # each struct is represented in the dictionary (no overwrites)
+    assert len(testBitStructCollection) == len(testDict[testBitStructCollection.name])
+    # order is preserved
+    for i in range(len(testBitStructCollection)):
+        assert testBitStructCollection[i].name in testDict[testBitStructCollection.name][i]
+        # each field has the expected value (which should be 0)
+        for field in testBitStructCollection[i]:
+            assert field.value == 0 == testDict[testBitStructCollection.name][i][testBitStructCollection[i].name][field.name]
+
+    # fill BitStructionCollection with actual data
     testBitStructCollection.from_bytes(bytedata)
-    assert_idx = 0
-    for struct in testBitStructCollection:
-        for field in struct:
-            assert field.value == expected[assert_idx]
-            assert_idx += 1
+    # remake dictionary
+    testDict = testBitStructCollection.to_dict()
+
+    # the dictionary is keyed with the name
+    assert testBitStructCollection.name in testDict
+    # each struct is represented in the dictionary (no overwrites)
+    assert len(testBitStructCollection) == len(testDict[testBitStructCollection.name])
+    # order is preserved
+    for i in range(len(testBitStructCollection)):
+        assert testBitStructCollection[i].name in testDict[testBitStructCollection.name][i]
+        # each field has the expected value
+        for field in testBitStructCollection[i]:
+            assert field.value == testDict[testBitStructCollection.name][i][testBitStructCollection[i].name][
+                field.name]
 
 
 @pytest.mark.parametrize(
