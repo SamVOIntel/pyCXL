@@ -1,6 +1,5 @@
 # Python imports
 import operator
-from types import SimpleNamespace
 
 
 # todo potential good use cases for dataclasses
@@ -59,7 +58,7 @@ class BitField:
         return operator.index(int(self))
 
     def __str__(self):
-        return f"{self.name}:    {self.value}"
+        return f"{self.name}:\t{self.value}"
 
     def __bytes__(self):
         """
@@ -70,15 +69,6 @@ class BitField:
         if rem:
             bytes_needed += 1
         return intVal.to_bytes(bytes_needed, 'big')
-
-    def to_bin(self):
-        """
-        __bin__ cannot be overloaded in the same way as other methods. Treat this function as if you could.
-        """
-        binStr = bin(self.value)[2:]
-        while len(binStr) < self.size:
-            binStr = '0' + binStr
-        return binStr
 
     @property
     def value(self):
@@ -109,6 +99,15 @@ class BitField:
     def to_dict(self):
         return {self.name: self.value}
 
+    def to_bin(self):
+        """
+        __bin__ cannot be overloaded in the same way as other methods. Treat this function as if you could.
+        """
+        binStr = bin(self.value)[2:]
+        while len(binStr) < self.size:
+            binStr = '0' + binStr
+        return binStr
+
 
 class BitStruct:
 
@@ -122,7 +121,7 @@ class BitStruct:
         print_width = max([len(field.name) for field in self.fields])
         retStr = f"\t{self.name}:\n"
         for field in self.fields:
-            padding = " " * (print_width - len(field.name))
+            padding = " " * (print_width - len(field.name) + 4)
             retStr += f"\t\t{field.name}:{padding}{field.value}\n"
         return retStr
 
@@ -167,7 +166,7 @@ class BitStruct:
 
     @fields.setter
     def fields(self, new_val):
-        raise AttributeError("Cannot modify the organization of this BitFieldStruct's BitFields.")
+        raise AttributeError("Cannot modify BitStruct's fields")
 
     @property
     def name(self):
@@ -175,7 +174,7 @@ class BitStruct:
 
     @name.setter
     def name(self, new_val):
-        raise AttributeError("This BitFieldStruct cannot be re-named.")
+        raise AttributeError("Cannot modify BitStruct's name")
 
     @property
     def size(self):
@@ -183,7 +182,7 @@ class BitStruct:
 
     @size.setter
     def size(self, new_val):
-        raise AttributeError("This BitFieldStruct cannot be re-sized.")
+        raise AttributeError("Cannot modify BitStruct's size")
 
     @property
     def idx(self):
@@ -238,9 +237,9 @@ class BitStruct:
             available_bins = available_bins[field.size:]
 
 
-class BitStructCollection:
+class BitCollection:
     """
-    A FlitStruct is defined as a 16 byte ordered collection of BitStructs
+    A BitCollection is defined as an ordered collection of BitStructs
     """
 
     def __init__(self, bitstructs: list[BitStruct], name: str = ""):
@@ -297,7 +296,7 @@ class BitStructCollection:
 
     @structs.setter
     def structs(self, new_value):
-        raise AttributeError(f"Cannot modify BitStructCollection's substructs")
+        raise AttributeError(f"Cannot modify BitCollection's substructs")
 
     @property
     def name(self):
@@ -305,7 +304,7 @@ class BitStructCollection:
 
     @name.setter
     def name(self, new_value):
-        raise AttributeError("Cannot modify BitStructCollection's name")
+        raise AttributeError("Cannot modify BitCollection's name")
 
     @property
     def size(self):
@@ -313,7 +312,7 @@ class BitStructCollection:
 
     @size.setter
     def size(self, new_value):
-        raise AttributeError("Cannot modify BitStructCollection's size")
+        raise AttributeError("Cannot modify BitCollection's size")
 
     @property
     def idx(self):
@@ -321,7 +320,7 @@ class BitStructCollection:
 
     @idx.setter
     def idx(self, new_value):
-        raise AttributeError("Cannot modify BitStructCollection's index")
+        raise AttributeError("Cannot modify BitCollection's index")
 
     def to_bin(self):
         binstr = ""
@@ -333,7 +332,7 @@ class BitStructCollection:
         """
         Creates a dictionary representation of the struct.
 
-        It's possible that a BitStructCollection might contain multiple structs
+        It's possible that a BitCollection might contain multiple structs
         of the same name.
         """
         return {
@@ -347,8 +346,11 @@ class BitStructCollection:
         Because this is a collection of bit structs it does make sense that someone
         might want to populate it with bits rather than bytes.
         """
+        if binstring.startswith("0b"):
+            binstring = binstring[2:]
+
         if len(binstring) < self.size:
-            raise ValueError("Not enough bins to fill the BitStructCollection")
+            raise ValueError("Not enough bins to fill the BitCollection")
 
         for struct in self.structs:
             struct.from_bin(binstring[:struct.size])
@@ -356,7 +358,7 @@ class BitStructCollection:
 
     def from_bytes(self, bytestring: bytes):
         if len(bytestring) < self.size // 8:
-            raise ValueError("Not enough bytes to fill the BitStructCollection")
+            raise ValueError("Not enough bytes to fill the BitCollection")
 
         data = Biterator(bytestring)
         available_bins = next(data)
@@ -368,7 +370,7 @@ class BitStructCollection:
             available_bins = available_bins[struct.size:]
 
 
-class FlitStruct(BitStructCollection):
+class FlitStruct(BitCollection):
 
     def __init__(self, bitstructs: list[BitStruct], name: str = ""):
         super().__init__(bitstructs=bitstructs, name=name)
