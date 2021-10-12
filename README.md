@@ -5,9 +5,15 @@ This project attempts to create a **pure python interface** for a CXL environmen
 It is a work in progress. The current work reflects [CXL 2.0](https://www.computeexpresslink.org/download-the-specification).
 
 ---
-TODO: Installation Notes
+## Installation Notes
+
+```
+pip install pyCXL -i https://devpi.intel.com/general/optane-test
+```
+**This python project does not currently support Python 2**
 
 ---
+
 ## What is CLX?
 ![CXL_logo](img/CXL_Logo.jpg)
 
@@ -19,16 +25,18 @@ communications.
 This package is a work in progress and I do not claim to be a CXL expert. I started this project as a way to help myself
 learn the protocol.
 
-The overall scope and design of this project is to get to a place where commands can be issued and responses read from a
-a device that supports the CXL protocol. This package does not implement the CXL protocol at a firmware level on the 
+The overall scope and design of this project is to get to a place where commands can be issued and responses read from
+a device that supports the CXL protocol. This package **does not** implement the CXL protocol at a firmware level on the 
 drive.
 
 ---
-TODO: Example of command and response with the package
+## Running Unit Tests
+This project is written with the expectation of **100%** unit test coverage.
+```
+coverage run -m pytest tests/<test name> && coverage html
+```
 
 ---
-
-
 
 ## What is the CXL Protocol?
 ![CXL_Components](img/CXL_Components.jpg)

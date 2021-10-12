@@ -2,7 +2,7 @@
 import pytest
 
 # Package imports
-from src.structs.utils import (
+from src.structs.bits import (
     Biterator,
     BitField,
     BitStruct,
@@ -77,6 +77,34 @@ class OVERLAPPING_BOUNDARY_STRUCT(BitStruct):
                 BitField(size=20, name="Lemon")
             ],
             name="Overlapping BitFields"
+        )
+
+
+class INCLUDES_RSVD_STRUCT(BitStruct):
+
+    def __init__(self):
+        super().__init__(
+            bitfields=[
+                BitField(size=4,    name="Mango"),
+                BitField(size=4,    name="Nectarine",   rsvd=True),
+                BitField(size=8,    name="Olive"),
+                BitField(size=16,   name="Papaya",      rsvd=True)
+            ],
+            name="Includes Rsvd BitFields"
+        )
+
+
+class INCLUDES_ENUMS_STRUCT(BitStruct):
+
+    def __init__(self):
+        super().__init__(
+            bitfields=[
+                BitField(size=4,    name="Quince",      enums={10: "Ten"}),
+                BitField(size=4,    name="Raspberry",   enums={20: "Twenty"}),
+                BitField(size=8,    name="Strawberry",  enums={170: "Hundred and seventy"}),
+                BitField(size=16,   name="Tomato",      enums={0: "Zero"})
+            ],
+            name="Includes Enums BitFields"
         )
 
 
@@ -270,22 +298,31 @@ def test_BitField_converts_to_int_hex(bitfield, expected_int, expected_hex):
 @pytest.mark.parametrize(
     "bitfield, expected_str", [
         # small and simple
-        (BitField(size=1,    name="Apple",           value=0), "Apple:\t0"),
-        (BitField(size=2,    name="Banana",          value=1), "Banana:\t1"),
-        (BitField(size=3,    name="Carrot",          value=2), "Carrot:\t2"),
-        (BitField(size=4,    name="Durian",          value=3), "Durian:\t3"),
+        (BitField(size=1,   name="Apple",           value=0), "Apple:\t0\n"),
+        (BitField(size=2,   name="Banana",          value=1), "Banana:\t1\n"),
+        (BitField(size=3,   name="Carrot",          value=2), "Carrot:\t2\n"),
+        (BitField(size=4,   name="Durian",          value=3), "Durian:\t3\n"),
 
         # somewhat larger
-        (BitField(size=8,    name="Elderberry",      value=128), "Elderberry:\t128"),
-        (BitField(size=9,    name="Fig",             value=255), "Fig:\t255"),
-        (BitField(size=10,   name="Grapefruit",      value=37),  "Grapefruit:\t37"),
-        (BitField(size=11,   name="Honeydew",        value=177), "Honeydew:\t177"),
+        (BitField(size=8,   name="Elderberry",      value=128), "Elderberry:\t128\n"),
+        (BitField(size=9,   name="Fig",             value=255), "Fig:\t255\n"),
+        (BitField(size=10,  name="Grapefruit",      value=37),  "Grapefruit:\t37\n"),
+        (BitField(size=11,  name="Honeydew",        value=177), "Honeydew:\t177\n"),
 
         # whacky
-        (BitField(size=47,   name="Jackfruit",       value=2314286), "Jackfruit:\t2314286"),
-        (BitField(size=21,   name="Kumquat",         value=98765),   "Kumquat:\t98765"),
-        (BitField(size=30,   name="Lemon",           value=6),       "Lemon:\t6"),
-        (BitField(size=17,   name="Mango",           value=111111),  "Mango:\t111111")
+        (BitField(size=47,  name="Jackfruit",       value=2314286), "Jackfruit:\t2314286\n"),
+        (BitField(size=21,  name="Kumquat",         value=98765),   "Kumquat:\t98765\n"),
+        (BitField(size=30,  name="Lemon",           value=6),       "Lemon:\t6\n"),
+        (BitField(size=17,  name="Mango",           value=111111),  "Mango:\t111111\n"),
+
+        # rsvd
+        (BitField(size=4,   name="Nectarine",       value=6, rsvd=True),    ""),
+        (BitField(size=4,   name="Olive",           value=6, rsvd=False),   "Olive:\t6\n"),
+
+        # enums
+        (BitField(size=4,   name="Papaya",          value=6, enums={6: "six"}),    "Papaya:\t6\tsix\n"),
+        (BitField(size=4,   name="Quince",          value=6, enums={5: "five"}),   "Quince:\t6\n"),
+
     ]
 )
 def test_BitField_converts_to_str(bitfield, expected_str):
@@ -355,6 +392,14 @@ def test_BitField_throws_invalid_assignment(bitfield, setval):
         bitfield.size = setval
     except AttributeError as err:
         assert str(err) == "size field cannot be modified"
+    try:
+        bitfield.rsvd = setval
+    except AttributeError as err:
+        assert str(err) == "rsvd field cannot be modified"
+    try:
+        bitfield.enums = setval
+    except AttributeError as err:
+        assert str(err) == "enums field cannot be modified"
 
 
 # ============================= BitStruct Tests =============================
@@ -425,10 +470,11 @@ def test_BitStruct_converts_to_int_hex(bitstruct, test_data, expected_int, expec
 
 @pytest.mark.parametrize(
     "bitstruct, test_data, expected_values", [
-        # sufficient Bytes
-        (BYTE_ALIGNED_32BIT_STRUCT(),     CHECKERBOARD_BYTES,       (10, 10, 85, 43605)),
-        (NON_BYTE_ALIGNED_27BIT_STRUCT(), CHECKERBOARD_BYTES,       (85, 5, 1, 3410)),
-        (OVERLAPPING_BOUNDARY_STRUCT(),   CHECKERBOARD_BYTES,       (697690, 693545302, 693610)),
+        (BYTE_ALIGNED_32BIT_STRUCT(),       CHECKERBOARD_BYTES,         (10, 10, 85, 43605)),
+        (NON_BYTE_ALIGNED_27BIT_STRUCT(),   CHECKERBOARD_BYTES,         (85, 5, 1, 3410)),
+        (OVERLAPPING_BOUNDARY_STRUCT(),     CHECKERBOARD_BYTES,         (697690, 693545302, 693610)),
+        (INCLUDES_RSVD_STRUCT(),            CHECKERBOARD_BYTES,         (10, 170)),
+        (INCLUDES_ENUMS_STRUCT(),           CHECKERBOARD_BYTES,         (10, 170))
     ]
 )
 def test_BitStruct_converts_to_str(bitstruct, test_data, expected_values):
@@ -437,14 +483,31 @@ def test_BitStruct_converts_to_str(bitstruct, test_data, expected_values):
     assert f"\t{bitstruct.name}:\n" in empty_string
     for field in bitstruct:
         padding = " " * (print_width - len(field.name) + 4)
-        assert f"{field.name}:{padding}0" in empty_string
+
+        if field.rsvd:
+            assert f"{field.name}:{padding}0" not in empty_string
+        else:
+            assert f"{field.name}:{padding}0" in empty_string
+
+        if field.enums:
+            additional_print = field.enums.get(field.value, '')
+            if additional_print:
+                assert f"{field.name}:{padding}0\t{additional_print}" in empty_string
 
     bitstruct.from_bytes(test_data)
     filled_string = str(bitstruct)
     assert f"\t{bitstruct.name}:\n" in filled_string
     for field in bitstruct:
         padding = " " * (print_width - len(field.name) + 4)
-        assert f"{field.name}:{padding}{field.value}" in filled_string
+        if field.rsvd:
+            assert f"{field.name}:{padding}{field.value}" not in filled_string
+        else:
+            assert f"{field.name}:{padding}{field.value}" in filled_string
+
+        if field.enums:
+            additional_print = field.enums.get(field.value, '')
+            if additional_print:
+                assert f"{field.name}:{padding}{field.value}\t{additional_print}" in filled_string
 
 
 @pytest.mark.parametrize(
@@ -557,7 +620,7 @@ def test_BitStruct_supports_assignment_output(bitstruct, expected_bin):
     ]
 )
 def test_BitCollection_constructor_calculates_size(bitstructs, expected):
-    testBitStruct = BitCollection(bitstructs=bitstructs)
+    testBitStruct = BitCollection(bitstructs=bitstructs, name="TEST COLLECTION")
     assert testBitStruct.size == expected
 
 
@@ -627,7 +690,7 @@ def test_BitCollection_constructor_calculates_size(bitstructs, expected):
     ]
 )
 def test_BitCollection_properties_throw_on_reassingment(bitstructs):
-    testBitStruct = BitCollection(bitstructs=bitstructs)
+    testBitStruct = BitCollection(bitstructs=bitstructs, name="TEST COLLECTION")
     # each assignment should throw
     try:
         testBitStruct.structs = 9
@@ -717,7 +780,7 @@ def test_BitCollection_properties_throw_on_reassingment(bitstructs):
     ]
 )
 def test_BitCollection_iterates(bitstructs, expected):
-    test_BitCollection = BitCollection(bitstructs=bitstructs)
+    test_BitCollection = BitCollection(bitstructs=bitstructs, name="TEST Collection")
     iterations = 0
     for iteration in test_BitCollection:
         iterations += 1
@@ -784,7 +847,7 @@ def test_BitCollection_iterates(bitstructs, expected):
     ]
 )
 def test_BitCollection_from_binary_valid_assignment(bitstructs, bindata, expected):
-    testBitCollection = BitCollection(bitstructs=bitstructs)
+    testBitCollection = BitCollection(bitstructs=bitstructs, name="TEST COLLECTION")
     try:
         testBitCollection.from_bin(bindata)
         assert_idx = 0
@@ -856,7 +919,7 @@ def test_BitCollection_from_binary_valid_assignment(bitstructs, bindata, expecte
     ]
 )
 def test_BitCollection_from_bytes_valid_assignment(bitstructs, bytedata, expected):
-    testBitCollection = BitCollection(bitstructs=bitstructs)
+    testBitCollection = BitCollection(bitstructs=bitstructs, name="TEST COLLECTION")
     try:
         testBitCollection.from_bytes(bytedata)
         assert_idx = 0
@@ -1010,7 +1073,7 @@ def test_BitCollection_converts_to_bytes(bitstructs, test_data, expected_bytes):
     ]
 )
 def test_BitCollection_converts_to_str(bitstructs, test_data, expected_str):
-    test_collection = BitCollection(bitstructs=bitstructs, name="TEST")
+    test_collection = BitCollection(bitstructs=bitstructs, name="TEST COLLECTION")
     empty_str = str(test_collection)
     assert f"{test_collection.name}:\n" in empty_str
     for struct in test_collection:
@@ -1117,6 +1180,7 @@ def test_BitCollection_to_dict(bitstructs, bytedata, expected):
                 field.name]
 
 
+# ============================= FlitStruct Tests =============================
 @pytest.mark.parametrize(
     "bitstructs, expected", [
         (
