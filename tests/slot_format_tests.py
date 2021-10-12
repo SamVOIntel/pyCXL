@@ -6,7 +6,7 @@ import importlib
 import re
 
 # Package Imports
-from src.structs.utils import FlitParser
+from src.structs.bits import FlitParser
 
 SLOT_FORMAT_IMPORT_PREFIX = r"src.structs."
 

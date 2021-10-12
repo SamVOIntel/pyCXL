@@ -2,7 +2,6 @@
 import operator
 
 
-# todo potential good use cases for dataclasses
 class Biterator:
 
     def __init__(self, data: bytes):
@@ -42,10 +41,12 @@ class Biterator:
 
 class BitField:
 
-    def __init__(self, size: int, name: str = "", value: int = 0):
-        self.__size = size
-        self.__name = name
-        self._value = value
+    def __init__(self, size: int, name: str, value: int = 0, enums: dict = None, rsvd: bool = False):
+        self.__size     = size
+        self.__name     = name
+        self.__enums    = enums
+        self.__rsvd     = rsvd
+        self._value     = value
 
     def __int__(self):
         return self.value
@@ -58,7 +59,18 @@ class BitField:
         return operator.index(int(self))
 
     def __str__(self):
-        return f"{self.name}:\t{self.value}"
+        if self.rsvd:
+            return ""
+
+        retStr = f"{self.name}:\t{self.value}"
+
+        if self.enums:
+            additional_info = self.enums.get(self.value, "")
+            if additional_info:
+                retStr += f"\t{additional_info}"
+
+        retStr += "\n"
+        return retStr
 
     def __bytes__(self):
         """
@@ -71,14 +83,12 @@ class BitField:
         return intVal.to_bytes(bytes_needed, 'big')
 
     @property
-    def value(self):
-        return self._value
+    def size(self):
+        return self.__size
 
-    @value.setter
-    def value(self, new_value):
-        if len(bin(new_value)[2:]) > self.size:
-            raise ValueError(f"{new_value} is too large for the field size: {self.size} bits")
-        self._value = new_value
+    @size.setter
+    def size(self, new_size):
+        raise AttributeError("size field cannot be modified")
 
     @property
     def name(self):
@@ -89,12 +99,30 @@ class BitField:
         raise AttributeError("name field cannot be modified")
 
     @property
-    def size(self):
-        return self.__size
+    def value(self):
+        return self._value
 
-    @size.setter
-    def size(self, new_size):
-        raise AttributeError("size field cannot be modified")
+    @value.setter
+    def value(self, new_value):
+        if len(bin(new_value)[2:]) > self.size:
+            raise ValueError(f"{new_value} is too large for the field size: {self.size} bits")
+        self._value = new_value
+
+    @property
+    def enums(self):
+        return self.__enums
+
+    @enums.setter
+    def enums(self, new_enums):
+        raise AttributeError("enums field cannot be modified")
+
+    @property
+    def rsvd(self):
+        return self.__rsvd
+
+    @rsvd.setter
+    def rsvd(self, new_rsvd):
+        raise AttributeError("rsvd field cannot be modified")
 
     def to_dict(self):
         return {self.name: self.value}
@@ -111,7 +139,7 @@ class BitField:
 
 class BitStruct:
 
-    def __init__(self, bitfields: list[BitField], name: str = ""):
+    def __init__(self, bitfields: list[BitField], name: str):
         self.__fields = bitfields
         self.__name = name
         self.__size = sum([field.size for field in bitfields])
@@ -121,8 +149,15 @@ class BitStruct:
         print_width = max([len(field.name) for field in self.fields])
         retStr = f"\t{self.name}:\n"
         for field in self.fields:
+            if field.rsvd:
+                continue
             padding = " " * (print_width - len(field.name) + 4)
-            retStr += f"\t\t{field.name}:{padding}{field.value}\n"
+            retStr += f"\t\t{field.name}:{padding}{field.value}"
+            if field.enums:
+                additional_value = field.enums.get(field.value, False)
+                if additional_value:
+                    retStr += f"\t{additional_value}"
+            retStr += "\n"
         return retStr
 
     def __int__(self):
@@ -242,7 +277,7 @@ class BitCollection:
     A BitCollection is defined as an ordered collection of BitStructs
     """
 
-    def __init__(self, bitstructs: list[BitStruct], name: str = ""):
+    def __init__(self, bitstructs: list[BitStruct], name: str):
         self.__structs = bitstructs
         self.__name = name
         self.__size = sum([struct.size for struct in self.structs])
@@ -372,7 +407,7 @@ class BitCollection:
 
 class FlitStruct(BitCollection):
 
-    def __init__(self, bitstructs: list[BitStruct], name: str = ""):
+    def __init__(self, bitstructs: list[BitStruct], name: str):
         super().__init__(bitstructs=bitstructs, name=name)
         if self.size != 128:
             raise ValueError(f"FlitStructs MUST be 128 bits, was {self.size}")
