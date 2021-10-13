@@ -1,5 +1,5 @@
 # Package Imports
-from src.structs.slot_formats import (
+from src.structs.flitsubstructures import (
     # field structures
     LLCRD_flit_header_fields,
     RETRY_flit_header_fields,
