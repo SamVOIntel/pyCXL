@@ -1,5 +1,5 @@
 # Package Imports
-from src.structs.flitsubstructures import (
+from pyCXL.structs.flitsubstructures import (
     flit_header_fields,
     H2D_request_fields,
     H2D_response_fields,

@@ -2,8 +2,8 @@
 import operator
 
 # Package imports
-from src.structs.biterator import Biterator
-from src.structs.bitstructs import BitStruct
+from pyCXL.structs.biterator import Biterator
+from pyCXL.structs.bitstructs import BitStruct
 
 
 class BitCollection:

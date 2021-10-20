@@ -10,9 +10,9 @@ from tests.test_utils import (
     FIFTEEN_BIT_STRUCT,
     TWENTY_BIT_STRUCT,
     THIRTY_BIT_STRUCT,
-    FOURTY_BIT_STRUCT
+    FORTY_BIT_STRUCT
 )
-from src.structs.bitcollections import BitCollection
+from pyCXL.structs.bitcollections import BitCollection
 
 # ============================= BitCollection Tests =============================
 @pytest.mark.parametrize(
@@ -31,9 +31,9 @@ from src.structs.bitcollections import BitCollection
         (
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], 128
         ),
         (
@@ -51,7 +51,7 @@ from src.structs.bitcollections import BitCollection
             [
                 EIGHT_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -60,7 +60,7 @@ from src.structs.bitcollections import BitCollection
         (
             [
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -101,9 +101,9 @@ def test_BitCollection_constructor_calculates_size(bitstructs, expected):
         (
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ]
         ),
         (
@@ -121,7 +121,7 @@ def test_BitCollection_constructor_calculates_size(bitstructs, expected):
             [
                 EIGHT_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -130,7 +130,7 @@ def test_BitCollection_constructor_calculates_size(bitstructs, expected):
         (
             [
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -191,9 +191,9 @@ def test_BitCollection_properties_throw_on_reassingment(bitstructs):
         (
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], 4
         ),
         (
@@ -211,7 +211,7 @@ def test_BitCollection_properties_throw_on_reassingment(bitstructs):
             [
                 EIGHT_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -220,7 +220,7 @@ def test_BitCollection_properties_throw_on_reassingment(bitstructs):
         (
             [
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -280,9 +280,9 @@ def test_BitCollection_iterates(bitstructs, expected):
         (
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], CHECKERBOARD_BITS,
             (
                 # 8 bits
@@ -299,9 +299,9 @@ def test_BitCollection_iterates(bitstructs, expected):
             # too small
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], bin(255),
             False
         )
@@ -352,9 +352,9 @@ def test_BitCollection_from_binary_valid_assignment(bitstructs, bindata, expecte
         (
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], CHECKERBOARD_BYTES,
             (
                 # 8 bits
@@ -371,9 +371,9 @@ def test_BitCollection_from_binary_valid_assignment(bitstructs, bindata, expecte
             # too small
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], bytearray(b"\xFF"),
             False
         )
@@ -408,7 +408,7 @@ def test_BitCollection_from_bytes_valid_assignment(bitstructs, bytedata, expecte
             # byte aligned
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 EIGHT_BIT_STRUCT()
             ],
             CHECKERBOARD_BYTES,
@@ -418,8 +418,8 @@ def test_BitCollection_from_bytes_valid_assignment(bitstructs, bytedata, expecte
         (
             # HUGE
             [
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
             ],
             CHECKERBOARD_BYTES,
@@ -454,7 +454,7 @@ def test_BitCollection_converts_to_int_hex(bitstructs, test_data, expected_int, 
             # byte aligned
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 EIGHT_BIT_STRUCT()
             ],
             CHECKERBOARD_BYTES,
@@ -463,8 +463,8 @@ def test_BitCollection_converts_to_int_hex(bitstructs, test_data, expected_int, 
         (
             # HUGE
             [
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
             ],
             CHECKERBOARD_BYTES,
@@ -501,7 +501,7 @@ def test_BitCollection_converts_to_bytes(bitstructs, test_data, expected_bytes):
             # byte aligned
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 EIGHT_BIT_STRUCT()
             ],
             CHECKERBOARD_BYTES,
@@ -517,8 +517,8 @@ def test_BitCollection_converts_to_bytes(bitstructs, test_data, expected_bytes):
         (
             # HUGE
             [
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
             ],
             CHECKERBOARD_BYTES,
@@ -589,9 +589,9 @@ def test_BitCollection_converts_to_str(bitstructs, test_data, expected_str):
             # just enough bytes of all zeros
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], CHECKERBOARD_BYTES,
             (
                 # 8 bits

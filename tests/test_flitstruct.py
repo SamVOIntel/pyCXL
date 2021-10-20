@@ -8,9 +8,9 @@ from tests.test_utils import (
     FIFTEEN_BIT_STRUCT,
     TWENTY_BIT_STRUCT,
     THIRTY_BIT_STRUCT,
-    FOURTY_BIT_STRUCT
+    FORTY_BIT_STRUCT
 )
-from src.structs.bitcollections import FlitStruct
+from pyCXL.structs.bitcollections import FlitStruct
 # ============================= FlitStruct Tests =============================
 @pytest.mark.parametrize(
     "bitstructs, expected", [
@@ -28,9 +28,9 @@ from src.structs.bitcollections import FlitStruct
         (
             [
                 EIGHT_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
             ], True
         ),
         (
@@ -48,7 +48,7 @@ from src.structs.bitcollections import FlitStruct
             [
                 EIGHT_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()
@@ -58,7 +58,7 @@ from src.structs.bitcollections import FlitStruct
             # too small
             [
                 FIFTEEN_BIT_STRUCT(),
-                FOURTY_BIT_STRUCT(),
+                FORTY_BIT_STRUCT(),
                 FIFTEEN_BIT_STRUCT(),
                 TWENTY_BIT_STRUCT(),
                 THIRTY_BIT_STRUCT()

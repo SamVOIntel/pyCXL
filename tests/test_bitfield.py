@@ -2,7 +2,7 @@
 import pytest
 
 # Package Imports
-from src.structs.bitfields import BitField
+from pyCXL.structs.bitfields import BitField
 
 # ============================= BitField Tests =============================
 @pytest.mark.parametrize(

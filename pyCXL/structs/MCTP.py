@@ -1,3 +1,60 @@
+# Package Imports
+from bitfields import BitField
+
+
+# ======================= BitFields =======================
+class Type(BitField):
+
+    def __init__(self):
+        super().__init__(size=5, name="Type")
+
+
+class Format(BitField):
+
+    def __init__(self):
+        super().__init__(size=3, name="Format")
+
+
+# TODO what does TH stand for?
+class TH(BitField):
+
+    def __init__(self):
+        super().__init__(size=1, name="TH")
+
+
+# TODO make this more identifying
+class Attr(BitField):
+
+    def __init__(self):
+        super().__init__(size=1, name="Attr")
+
+
+# TODO what does T8 stand for?
+class T8(BitField):
+
+    def __init__(self):
+        super().__init__(size=1, name="T8")
+
+
+class TrafficClass(BitField):
+
+    def __init__(self):
+        super().__init__(size=3, name="Traffic Class")
+
+
+# TODO what does T9 stand for?
+class T9(BitField):
+
+    def __init__(self):
+        super().__init__(size=1, name="T9")
+
+
+
+
+
+
+
+"""
 from ctypes import (
     BigEndianStructure,
     c_uint8,
@@ -110,3 +167,4 @@ class mctp_vdm_packet(BigEndian_TWIDL_Structure):
         ("transportHeader",             pcie_vdm_header),
         ("packetPayload",               mctp_message_header)
     ]
+"""
