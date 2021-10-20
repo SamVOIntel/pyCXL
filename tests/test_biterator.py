@@ -6,7 +6,7 @@ from tests.test_utils import (
     CHECKERBOARD_BYTES,
     CHECKERBOARD_BITS
 )
-from src.structs.biterator import Biterator
+from pyCXL.structs.biterator import Biterator
 
 # ============================= Biterator Tests =============================
 @pytest.mark.parametrize(

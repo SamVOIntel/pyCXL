@@ -6,9 +6,9 @@ import importlib
 import re
 
 # Package Imports
-from src.structs.bitstructs import FlitParser
+from pyCXL.structs.bitstructs import FlitParser
 
-SLOT_FORMAT_IMPORT_PREFIX = r"src.structs."
+SLOT_FORMAT_IMPORT_PREFIX = r"pyCXL.structs."
 
 
 @pytest.mark.parametrize(
